@@ -3,6 +3,12 @@ import json
 from bs4 import BeautifulSoup
 import re
 
+def tuple_to_str(origin: str|tuple[float], destination: str|tuple[float], mode: str) -> str:
+    if isinstance(origin, str):
+        origin = origin.replace(" ", "")
+    if isinstance(destination, str):
+        destination = destination.replace(" ", "")
+    return f"{origin}_{destination}_{mode}"
 class NfuClient:
     '''
     A class to get house data from NFU
@@ -65,12 +71,6 @@ class NfuClient:
         with open("cache/sch_ids.json", "w") as sch_ids_file:
             json.dump(NfuClient.sch_ids, sch_ids_file, indent=4)
 
-def tuple_to_str(origin: str|tuple[int], destination: str|tuple[int], mode: str) -> str:
-    if isinstance(origin, str):
-        origin = origin.replace(" ", "")
-    if isinstance(destination, str):
-        destination = destination.replace(" ", "")
-    return f"{origin}_{destination}_{mode}"
 class GoogleClient:
     '''
     A class to get data from Google Map routes api
@@ -82,7 +82,7 @@ class GoogleClient:
         self.api_key = api_key
         return
 
-    def fetch_data(self, origin: str|tuple[int], destination: str|tuple[int], mode: str = "BICYCLE") -> dict:
+    def fetch_data(self, origin: str|tuple[float], destination: str|tuple[float], mode: str = "BICYCLE") -> dict:
         if tuple_to_str( origin, destination, mode ) in GoogleClient.google_map:
             return GoogleClient.google_map[{"origin": origin, "destination": destination}]
         url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
@@ -122,6 +122,47 @@ class GoogleClient:
             print(f"Error decoding JSON: {e}")
             return None
     def dump_data(self,file_path: str = "data/google_map.json"):
-        with open(file_path, "w") as google_map_file:
+        with open(file_path, "w",encoding="utf-8") as google_map_file:
             json.dump(GoogleClient.google_map, google_map_file, indent=4)
         return 
+
+class OSRMClient:
+    with open("data/osrm.json", "r") as osrm_file:
+        osrm_data = json.load(osrm_file)
+    def __init__(self, host="localhost", port=5000):
+        self.base_url = f"http://{host}:{port}/route/v1"
+
+    def route(self, origin: tuple[float], destination: tuple[float] ,mode: str) -> dict:
+        """
+        :param mode: 'car', 'bicycle', or 'motorcycle'
+        :param start: (lon, lat)
+        :param end: (lon, lat)
+        :return: dict with duration (sec) and distance (meters)
+        """
+        if tuple_to_str( origin, destination, mode ) in GoogleClient.google_map:
+            return OSRMClient.osrm_data[tuple_to_str(origin, destination,mode)]
+        coords = f"{origin[0]},{origin[1]};{destination[0]},{destination[1]}"
+        url = f"{self.base_url}/{mode}/{coords}"
+        params = {
+            "overview": "false",
+            "alternatives": "false",
+            "steps": "false"
+        }
+        resp = requests.get(url, params=params)
+        data = resp.json()
+        if "routes" in data and len(data["routes"]) > 0:
+            route = data["routes"][0]
+            OSRMClient.osrm_data[tuple_to_str(origin, destination,mode)] = {
+                "distance": route["distance"], 
+                "duration": route["duration"]
+            }
+            return {
+                "distance": route["distance"],
+                "duration": route["duration"]
+            }
+        else:
+            raise Exception(f"Routing error: {data}")
+    def dump_data(self,file_path: str = "data/osrm.json"):
+        with open(file_path, "w",encoding="utf-8") as osrm_file:
+            json.dump(OSRMClient.osrm_data, osrm_file, indent=4)
+        return
