@@ -1,4 +1,6 @@
 __pycache__
 data/
 config.json
-osrm-data/
+osrm-data/*
+!osrm-data/profiles/
+osrm-data/profiles/lib/
