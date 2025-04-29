@@ -1,7 +1,9 @@
 # TODO
 | Task | Description | Priority | Status |
 |------|-------------|----------|--------|
-| travel time | Use google api to calulate travel time | high | in progress |
-| parse json | parse json data from nfu | high | in progress |
+| test osrm | test osrm can get correct duration | high | in progress |
+| filter | write a filter function to filter out the data | high | in progress|
+| sorter | write a sorter function to sort the data | high | in progress|
 | html | create html page as gui| medium | not started |
+| parse inconsistency | parse the inconsistency data | medium | not started|
 
