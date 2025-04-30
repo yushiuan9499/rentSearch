@@ -13,10 +13,12 @@ def main():
     # map_manager.build_osrm("tainan-urban-bicycle")
     # map_manager.build_osrm("tainan-urban-motorcycle")
     # map_manager.stop_server(5000)
-    # map_manager.start_server("tainan-urban-car")
+    map_manager.start_server("tainan-urban-bicycle")
 
     osrm_client = client.OSRMClient()
-    print(osrm_client.route((120.22189878167627,22.99802634394306),(120.2071239442969,22.98485846409672), "car"))
+    print(osrm_client.route((120.22189878167627,22.99802634394306),(120.2071239442969,22.98485846409672), "bicycle"))
+    # print(osrm_client.route((120.232274828867,22.99191103585341),(120.22189878167627,22.99802634394306), "bicycle"))
+    print(osrm_client.route((120.25266045764478,22.998431830639003),(120.22189878167627,22.99802634394306), "bicycle"))
     osrm_client.dump_data()
     # nfu_client = client.NfuClient()
     # with open("data/houses/ncku.json", "w", encoding="utf-8") as nfu_file:

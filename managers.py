@@ -78,6 +78,14 @@ class OSRMManager:
 
     def start_server(self, name: str, port: int = 5000):
         c = self.conn.cursor()
+        # Check if the port is already in use
+        c.execute("SELECT name, port FROM maps WHERE port = ?", (port,))
+        row = c.fetchone()
+        if row:
+            if row[0] == name:
+                print(f"Map '{name}' is already running on port {port}")
+                return
+            raise ValueError(f"Port {port} is already in use by map '{row[0]}'")
         c.execute("SELECT dir_name , profile FROM maps WHERE name = ?", (name,))
         row = c.fetchone()
         if not row:
