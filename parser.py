@@ -23,21 +23,6 @@ def parse(item: dict) -> dict:
         ret["material"] = "cement"
     else:
         ret["material"] = item["material"]
-    # get area
-    tmp = item["house_area"].split()
-    for i in tmp:
-        if i[0:2] == "套房":
-            try:
-                ret["suite_area"] = int(i[2:-1])
-            except :
-                print(f"Error parsing suite area: {i} {i[2:-1]}")
-        elif i[0:2] == "雅房":
-            try:
-                ret["room_area"] = int(i[2:-1])
-            except :
-                print(f"Error parsing suite area: {i} {i[2:-1]}")
-        else:
-            raise ValueError(f"Unknown area type: {i}")
     # get price
     ret["min_price"] = int(item["rentalx"])
     ret["max_price"] = int(item["rentaly"])
@@ -84,12 +69,49 @@ def parse(item: dict) -> dict:
         ret["gender"] = "F"
     else:
         ret["gender"] = "N/A"
-    return ret
+    # get area
+    tmp = item["house_area"].split()
+    room_area = -1
+    suite_area = -1
+    for i in tmp:
+        if i[0:2] == "套房":
+            try:
+                suite_area = int(i[2:-1])
+            except :
+                print(f"Error parsing suite area: {i} {i[2:-1]}")
+        elif i[0:2] == "雅房":
+            try:
+                room_area = int(i[2:-1])
+            except :
+                print(f"Error parsing suite area: {i} {i[2:-1]}")
+        else:
+            raise ValueError(f"Unknown area type: {i}")
+    if room_area == -1:
+        ret["room_type"] = "suite"
+        ret["area"] = suite_area
+        return ret
+    if suite_area == -1:
+        ret["room_type"] = "room"
+        ret["area"] = room_area
+        return ret
+    ret1 = ret
+    ret2 = ret.copy()
+    ret1["room_type"] = "room"
+    ret1["area"] = room_area
+    ret2["room_type"] = "suite"
+    ret2["area"] = suite_area
+    return ret1, ret2
 
 def convert(filename: str):
     with open("data/houses-raw/"+filename, "r",encoding='utf-8') as file:
         data = json.load(file)
-    parsed_data = [parse(item) for item in data]
+    parsed_data = [
+        x
+        for item in data
+        if (res := parse(item))
+        for x in (res if isinstance(res, tuple) else (res,))
+        if isinstance(x, dict)
+    ]
     with open("data/houses/"+filename, "w",encoding='utf-8') as file:
         json.dump(parsed_data, file, indent=4, ensure_ascii=False)
 

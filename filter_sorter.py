@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import client
 
 osrm_client = client.OSRMClient()
@@ -25,14 +25,16 @@ class Filter:
 
     min_price: int = 0
     max_price: int = 100000
-    max_travel_time: int = 100000
-    max_distance: int = 100000
+    max_travel_time: float = 100000
+    max_distance: float = 100000
     gender: str = "N/A"
-    room_types_and_area: dict = {"suite": (0, 100), "room": (0, 100)}
+    room_types: str = ""
+    min_area: int = 0
+    max_area: int = 100000
     school_location: tuple[float]|None = None
-    rent_types: list[str] = []
-    house_types: list[str] = []
-    materials: list[str] = []
+    rent_types: list[str] = field(default_factory=list)
+    house_types: list[str] = field(default_factory=list)
+    materials: list[str] = field(default_factory=list)
 
 @dataclass
 class Sort:
@@ -55,7 +57,7 @@ class Sort:
     area: int = 0
 
 
-def filt(item, filter:Filter):
+def filt(item:dict, filter:Filter):
     """
     Filters the given data based on the provided filter.
 
@@ -68,10 +70,10 @@ def filt(item, filter:Filter):
     if item["min_price"] < filter.min_price or item["max_price"] > filter.max_price:
         return False
     # filter the area
-    if item["room_area"] < filter.room_types_and_area["room"][0] \
-        or item["room_area"] > filter.room_types_and_area["room"][1] \
-        or item["suite_area"] < filter.room_types_and_area["suite"][0] \
-        or item["suite_area"] > filter.room_types_and_area["suite"][1]:
+    if item["area"] < filter.min_area or item["area"] > filter.max_area:
+        return False
+    # filter the room type
+    if len(filter.room_types) > 0 and item["room_type"] not in filter.room_types:
         return False
     # filter the gender
     if filter.gender == "M" and item["gender"] == "F" \
@@ -87,11 +89,19 @@ def filt(item, filter:Filter):
     if len(filter.materials) > 0 and item["material"] not in filter.materials:
         return False
     # filter travel time and distance
-    if filter.school_location != None::
-        # get the travel time and distance from the osrm client
-        travel_time, distance = osrm_client.route(tuple(item["coordinates"]), filter.school_location,"bicycle")
-        if travel_time > filter.max_travel_time or distance > filter.max_distance:
+    if filter.school_location != None:
+        if item["coordinates"] == (0, 0):
             return False
+        # get the travel time and distance from the osrm client
+        res = osrm_client.route(tuple(item["coordinates"]), filter.school_location,"bicycle")
+        item["travel_time"] = res["duration"]
+        item["distance"] = res["distance"]
+        if res["duration"] > filter.max_travel_time or res["distance"] > filter.max_distance:
+            return False
+
+    else :
+        item["travel_time"] = 0
+        item["distance"] = 0
     return True
 def sorter(data, sort:Sort):
     """

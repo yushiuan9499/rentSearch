@@ -157,8 +157,8 @@ class OSRMClient:
                 "duration": route["duration"]
             }
             return {
-                "distance": route["distance"],
-                "duration": route["duration"]
+                "distance": float(route["distance"]),
+                "duration": float(route["duration"])
             }
         else:
             raise Exception(f"Routing error: {data}")
