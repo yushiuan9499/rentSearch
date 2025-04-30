@@ -4,3 +4,4 @@ config.json
 osrm-data/*
 !osrm-data/profiles/
 osrm-data/profiles/lib/
+osrm.log

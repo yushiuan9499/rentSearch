@@ -12,7 +12,7 @@ def main():
     # map_manager.build_osrm("tainan-urban-car")
     # map_manager.build_osrm("tainan-urban-bicycle")
     # map_manager.build_osrm("tainan-urban-motorcycle")
-    map_manager.stop_server(5000)
+    # map_manager.stop_server(5000)
     # map_manager.start_server("tainan-urban-car")
 
     osrm_client = client.OSRMClient()

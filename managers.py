@@ -3,6 +3,7 @@ import os
 import subprocess
 import sqlite3
 from typing import Tuple, List
+import re
 
 class OSRMManager:
     def __init__(self, db_path="osrm-data/maps.db", maps_dir="osrm-data/maps", use_docker=True, docker_image="osrm/osrm-backend:latest"):
@@ -84,7 +85,7 @@ class OSRMManager:
         dir_name, profile = row
 
         mnt_dir = os.getcwd() + "/osrm-data"
-        docker_cmd = ["sudo", "docker", "run", "-it", "--rm", "-p", f"{port}:{port}", "-v", f"{mnt_dir}:/data",self.docker_image]
+        docker_cmd = ["sudo", "docker", "run", "-it", "--rm", "--network=host", "-v", f"{mnt_dir}:/data",self.docker_image]
         process = subprocess.Popen(
             docker_cmd+["osrm-routed", "--algorithm", "MLD", "--port", str(port), f"/data/maps/{dir_name}/{profile}.osrm"],
             stdout=open("osrm.log", "w"),
@@ -103,9 +104,24 @@ class OSRMManager:
         return c.fetchall()
 
     def stop_server(self, port: int):
-        mnt_dir = os.getcwd() + "/osrm-data"
-        docker_cmd = ["sudo", "docker", "run", "-it", "--rm", "-p", f"{port}:{port}", "-v", f"{mnt_dir}:/data",self.docker_image]
-        subprocess.run(docker_cmd + ["fuser", "-k", f"{port}/tcp"])
+        # 找出使用該 port 的 container ID
+        try:
+            result = subprocess.check_output([
+                "sudo", "docker", "ps", "--filter", f"publish={port}", "--format", "{{.ID}}"
+            ]).decode().strip()
+            
+            if result:
+                print(f"Killing container using port {port}: {result}")
+                subprocess.run(["sudo", "docker", "kill", result], check=True)
+            else:
+                print(f"No container is using port {port}")
+        
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to find or kill container on port {port}: {e}")
+
+        c = self.conn.cursor()
+        c.execute("UPDATE maps SET port = NULL WHERE port = ?", (port,))
+        self.conn.commit()
 
     def delete_map(self, name: str):
         c = self.conn.cursor()

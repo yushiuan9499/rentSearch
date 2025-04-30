@@ -1,1 +1,0 @@
-docker: Error response from daemon: driver failed programming external connectivity on endpoint frosty_tharp (fba71174cc29b6c6a80df2adc06a609fbf584b6d4d8482bb28a690c970b5cd5b): Bind for 0.0.0.0:5000 failed: port is already allocated.
