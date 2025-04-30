@@ -28,9 +28,7 @@ class Filter:
     max_travel_time: int = 100000
     max_distance: int = 100000
     gender: str = "N/A"
-    min_area: int = 0
-    max_area: int = 100000
-    room_types: list[str] = []
+    room_types_and_area: dict = {"suite": (0, 100), "room": (0, 100)}
     school_location: tuple[float]|None = None
     rent_types: list[str] = []
     house_types: list[str] = []
@@ -57,7 +55,7 @@ class Sort:
     area: int = 0
 
 
-def fileter(item, filter:Filter):
+def filt(item, filter:Filter):
     """
     Filters the given data based on the provided filter.
 
@@ -70,14 +68,14 @@ def fileter(item, filter:Filter):
     if item["min_price"] < filter.min_price or item["max_price"] > filter.max_price:
         return False
     # filter the area
-    if item["room_area"] < filter.min_area or item["room_area"] > filter.max_area:
+    if item["room_area"] < filter.room_types_and_area["room"][0] \
+        or item["room_area"] > filter.room_types_and_area["room"][1] \
+        or item["suite_area"] < filter.room_types_and_area["suite"][0] \
+        or item["suite_area"] > filter.room_types_and_area["suite"][1]:
         return False
     # filter the gender
-    if fileter.gender == "M" and item["gender"] == "F" \
+    if filter.gender == "M" and item["gender"] == "F" \
         or filter.gender == "F" and item["gender"] == "M":
-        return False
-    # filter the room type
-    if len(filter.room_types) > 0 and item["room_type"] not in filter.room_types:
         return False
     # filter the rent type
     if len(filter.rent_types) > 0 and item["rent_type"] not in filter.rent_types:
@@ -132,7 +130,7 @@ def sortNfilter(data, sort:Sort, filter:Filter):
         list: The sorted and filtered data.
     """
     # Filter the data based on the filter criteria
-    filtered_data = [item for item in data if fileter(item, filter)]
+    filtered_data = [item for item in data if filt(item, filter)]
     # Sort the filtered data based on the sort criteria
     sorted_data = sorter(filtered_data, sort)
 
