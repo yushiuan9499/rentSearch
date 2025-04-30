@@ -11,18 +11,19 @@ def parse(item: dict) -> dict:
         dict: A dictionary with the parsed data.
     """
     ret = {}
+    # get url
     ret["url"] = item["house_url"]
     if ret["url"] == None:
+        # if url is None, use house_id
         ret["url"] = item["house_id"]
-    ret["city"] = item["house_city"]
-    ret["town"] = item["house_town"]
-    ret["address"] = item["house_address"]
+    # get type
     ret["house_type"] = item["house_type"]
     ret["rent_type"] = item["rent_type"]
     if item["material"] == "水泥":
         ret["material"] = "cement"
     else:
         ret["material"] = item["material"]
+    # get area
     tmp = item["house_area"].split()
     for i in tmp:
         if i[0:2] == "套房":
@@ -37,14 +38,9 @@ def parse(item: dict) -> dict:
                 print(f"Error parsing suite area: {i} {i[2:-1]}")
         else:
             raise ValueError(f"Unknown area type: {i}")
+    # get price
     ret["min_price"] = int(item["rentalx"])
     ret["max_price"] = int(item["rentaly"])
-    ret["ammeter"] = (item["ammeter"] == "有")
-    try:
-        ret["coordinates"] = (float(item["longitude"]), float(item["latitude"]))
-    except :
-        print(f"Error parsing coordinates: {item['house_id']} {item['longitude']} {item['latitude']}")
-        ret["coordinates"] = (0.0, 0.0)
     if item["deposit"][1:3] == "個月":
         if item["deposit"][0] == "一":
             ret["min_deposit"] = ret["min_price"] * 1
@@ -71,6 +67,17 @@ def parse(item: dict) -> dict:
             print(f"Error parsing deposit: {item['house_id']} {item['deposit']}")
             ret["min_deposit"] = 0
             ret["max_deposit"] = 0
+    ret["ammeter"] = (item["ammeter"] == "有")
+    # get location
+    ret["city"] = item["house_city"]
+    ret["town"] = item["house_town"]
+    ret["address"] = item["house_address"]
+    try:
+        ret["coordinates"] = (float(item["longitude"]), float(item["latitude"]))
+    except :
+        print(f"Error geocoding address: {item['house_id']}")
+        ret["coordinates"] = (0.0, 0.0)
+    # get limit
     if item["sex_limit"] == "男":
         ret["gender"] = "M"
     elif item["sex_limit"] == "女":
