@@ -1,5 +1,8 @@
 #!/bin/python3
 import json
+import client
+
+arcgis_client = client.ArcGISClient()
 def parse(item: dict) -> dict:
     """
     Parses the given data and returns a dictionary with the parsed data.
@@ -59,9 +62,14 @@ def parse(item: dict) -> dict:
     ret["address"] = item["house_address"]
     try:
         ret["coordinates"] = (float(item["longitude"]), float(item["latitude"]))
-    except :
-        print(f"Error geocoding address: {item['house_id']}")
-        ret["coordinates"] = (0.0, 0.0)
+    except:
+        # try to geocode the address
+        res = arcgis_client.geocode(ret["city"], ret["town"], ret["address"])
+        if res is None:
+            print(f"Error geocoding address: {item['house_id']}")
+            ret["coordinates"] = (0.0, 0.0)
+        else:
+            ret["coordinates"] = (res["lon"], res["lat"])
     # get limit
     if item["sex_limit"] == "男":
         ret["gender"] = "M"
@@ -118,3 +126,4 @@ def convert(filename: str):
 
 if __name__ == "__main__":
     convert("ncku.json")
+    arcgis_client.dump_data()
