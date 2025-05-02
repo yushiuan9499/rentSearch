@@ -28,10 +28,10 @@ class Filter:
     max_travel_time: float = 100000
     max_distance: float = 100000
     gender: str = "N/A"
-    room_types: str = ""
+    room_types: list[str] = field(default_factory=list)
     min_area: int = 0
     max_area: int = 100000
-    school_location: tuple[float]|None = None
+    school_location: tuple[float,float]|None = None
     rent_types: list[str] = field(default_factory=list)
     house_types: list[str] = field(default_factory=list)
     materials: list[str] = field(default_factory=list)
@@ -90,10 +90,9 @@ def filt(item:dict, filter:Filter):
         return False
     # filter travel time and distance
     if filter.school_location != None:
-        if item["coordinates"] == (0, 0):
-            return False
         # get the travel time and distance from the osrm client
         res = osrm_client.route(tuple(item["coordinates"]), filter.school_location,"bicycle")
+        print(res)
         item["travel_time"] = res["duration"]
         item["distance"] = res["distance"]
         if res["duration"] > filter.max_travel_time or res["distance"] > filter.max_distance:

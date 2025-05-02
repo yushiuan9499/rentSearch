@@ -44,7 +44,7 @@ class NfuClient:
         soup = BeautifulSoup(res.text, "html.parser")
         self.headers["X-CSRF-TOKEN"] = soup.find("meta", attrs={"name": "csrf-token"})["content"]
         return 
-    def get_house_data_by_id(self,sch_ids: list[int]) -> dict:
+    def get_house_data_by_id(self,sch_ids: list[int]) -> list[dict]:
         '''
             Get house data from NFU
         '''
@@ -64,7 +64,7 @@ class NfuClient:
             print(f"Error decoding JSON: {e}")
             return None
 
-    def get_house_data_by_abbr(self, sch_abbr: str) -> dict:
+    def get_house_data_by_abbr(self, sch_abbr: str) -> list[dict]:
         sch_ids = self.get_sch_ids(sch_abbr)
         return self.get_house_data_by_id(sch_ids)
     def dump_sch_ids(self):

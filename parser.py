@@ -3,7 +3,7 @@ import json
 import client
 
 arcgis_client = client.ArcGISClient()
-def parse(item: dict) -> dict:
+def parse_item(item: dict) -> dict|tuple[dict, dict]:
     """
     Parses the given data and returns a dictionary with the parsed data.
 
@@ -20,12 +20,39 @@ def parse(item: dict) -> dict:
         # if url is None, use house_id
         ret["url"] = item["house_id"]
     # get type
-    ret["house_type"] = item["house_type"]
-    ret["rent_type"] = item["rent_type"]
+    # 先去除空白
+
+    item["house_type"] = item["house_type"].replace(" ", "")
+    if item["house_type"] == "學舍":
+        ret["house_type"] = "dormitory"
+    elif item["house_type"] == "透天":
+        ret["house_type"] = "townhouse"
+    elif item["house_type"] == "公寓":
+        ret["house_type"] = "apartment"
+    elif item["house_type"] == "華廈":
+        ret["house_type"] = "condominium"
+    elif item["house_type"] == "大樓":
+        ret["house_type"] = "building"
+    else:
+        raise ValueError(f"Unknown house type: {item['house_type']}")
+    # get rent type
+    if not item["rent_type"] is None:
+        item["rent_type"] = item["rent_type"].replace(" ", "")
+        if item["rent_type"] == "房間分租":
+            ret["rent_type"] = "room_share"
+        elif item["rent_type"] == "獨立套房":
+            ret["rent_type"] = "suite"
+        elif item["rent_type"] == "整棟出租" or item["rent_type"] == "整戶出租":
+            ret["rent_type"] = "whole"
+        else:
+            raise ValueError(f"Unknown rent type: {item['rent_type']}")
+    else: 
+        ret["rent_type"] = "unknown"
     if item["material"] == "水泥":
         ret["material"] = "cement"
     else:
-        ret["material"] = item["material"]
+                         raise ValueError(f"Unknown material: {item['material']}")
+    ret["rest_room_num"] = item["rest_room_num"]
     # get price
     ret["min_price"] = int(item["rentalx"])
     ret["max_price"] = int(item["rentaly"])
@@ -110,20 +137,33 @@ def parse(item: dict) -> dict:
     ret2["area"] = suite_area
     return ret1, ret2
 
-def convert(filename: str):
-    with open("data/houses-raw/"+filename, "r",encoding='utf-8') as file:
-        data = json.load(file)
+def parse_list(data: list[dict]) -> list[dict]:
+    """
+    Parses the given data and returns a list of dictionaries with the parsed data.
+
+    Args:
+        data (list[dict]): The data to be parsed.
+
+    Returns:
+        list[dict]: A list of dictionaries with the parsed data.
+    """
     parsed_data = [
         x
         for item in data
-        if (res := parse(item))
+        if (res := parse_item(item))
         for x in (res if isinstance(res, tuple) else (res,))
         if isinstance(x, dict)
     ]
+    return parsed_data
+
+def convert(filename: str):
+    with open("data/houses-raw/"+filename, "r",encoding='utf-8') as file:
+        data = json.load(file)
+    parsed_data = parse_list(data)
     with open("data/houses/"+filename, "w",encoding='utf-8') as file:
         json.dump(parsed_data, file, indent=4, ensure_ascii=False)
 
 
 if __name__ == "__main__":
-    convert("ncku.json")
+    convert("NCKU.json")
     arcgis_client.dump_data()

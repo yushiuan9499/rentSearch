@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>搜尋頁面</title>
+  <script src="/static/script.js" defer></script>
+</head>
+  <body>
+    <!-- 第一步：輸入查詢對象 -->
+    <form id="school-form">
+      <label>學校縮寫: <input type="text" name="school_abbr" required></label>
+      <button type="submit">查詢</button>
+    </form>
+
+    <!-- 第二步：選項表單（初始為 hidden） -->
+    <form id="search-form" style="display:none; margin-top: 20px;">
+
+      <!-- 條件區 -->
+      <h2>搜尋條件</h2>
+      <label>最低價格: <input type="number" name="min_price"></label><br>
+      <label>最高價格: <input type="number" name="max_price"></label><br>
+      <label>性別：</label>
+      <select name="gender">
+        <option value="N/A">不限</option>
+        <option value="M">男</option>
+        <option value="F">女</option>
+      </select><br>
+      <label>最低坪數：<input type="number" name="min_area"></label><br>
+      <label>最高坪數：<input type="number" name="max_area"></label><br>
+
+      <label>學校座標：</label>
+      <label>經度: <input type="number" name="longitude" step="0.0000001"></label>
+      <label>緯度: <input type="number" name="latitude" step="0.0000001"></label><br>
+      <label>距離學校最多：<input type="number" name="distance" step="0.1"> 公尺</label>
+      <label>通勤時間最多：<input type="number" name="duration" step="0.1"> 秒</label><br>
+      <label>建築材料（全留空，表不限）：</label>
+      <label><input type="checkbox" name="material" value="cement">水泥</label>
+
+      <details>
+        <summary>更多選項</summary>
+        <label>房間類型(全留空，表不限)：</label>
+        <label><input type="checkbox" name="room_types" value="suite">套房</label>
+        <label><input type="checkbox" name="room_types" value="room">雅房</label>
+        <label><input type="checkbox" name="room_types" value="bed">床位</label><br>
+        <label>房屋類型（全留空，表不限）：</label>
+        <label><input type="checkbox" name="house_types" value="apartment">公寓</label>
+        <label><input type="checkbox" name="house_types" value="townhouse">透天</label>
+        <label><input type="checkbox" name="house_types" value="building">大樓</label>
+        <label><input type="checkbox" name="house_types" value="condominium">華廈</label>
+        <label><input type="checkbox" name="house_types" value="dormitory">學舍</label>
+        <label>出租類型（全留空，表不限）：</label>
+        <label><input type="checkbox" name="rent_types" value="room_share">房間分租</label>
+        <label><input type="checkbox" name="rent_types" value="whole">整戶出租</label>
+        <label><input type="checkbox" name="rent_types" value="suite">獨立套房</label>
+      </details>
+
+
+      <label>Sort Order:</label>
+      <p>選擇排序依據，正數表有小到大，負數反之，0表示不排序</p>
+      <p>且數字越大者越先作為比較依據</p>
+      <label>最低價格：<input type="number" name="min_price_order"></label><br>
+      <label>最高價格：<input type="number" name="max_price_order"></label><br>
+      <label>坪數：<input type="number" name="area_order"></label><br>
+      <label>通勤時間：<input type="number" name="duration_order"></label><br>
+      <label>通勤距離：<input type="number" name="distance_order"></label><br>
+
+
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- 結果區塊 -->
+    <hr>
+    <div id="result-section" style="display:none;">
+      <h2>搜尋結果</h2>
+      <ul id="result-list"></ul>
+    </div>
+  </body>
+</html>

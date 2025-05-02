@@ -4,8 +4,6 @@ import filter_sorter
 import json
 import client
 
-with open("data/houses/ncku.json", "r") as f:
-    data = json.load(f)
 
 def main():
     map_manager = managers.OSRMManager()
@@ -13,18 +11,19 @@ def main():
     # map_manager.stop_server(5000)
     # map_manager.start_server("tainan-urban-bicycle")
 
-    # osrm_client = client.OSRMClient()
-    # school_location = (120.22165175769095, 22.997918650159388)
-    # test_data = [(120.2205935, 22.9923589),(120.2530783866288,22.997724060898566)]
-    # # 180s 16mmin
-    # # 750m 4km
-    # for item in test_data:
-    #     res = osrm_client.route(school_location, item,"bicycle")
-    #     if res is not None:
-    #         print(f"Distance: {res['distance'] / 1000} km")
-    #         print(f"Duration: {res['duration'] / 60} min")
-    #     else:
-    #         print("No route found.")
+    osrm_client = client.OSRMClient()
+    school_location = (120.22165175769095, 22.997918650159388)
+    test_data = [(120.2205935, 22.9923589),(120.2530783866288,22.997724060898566)]
+    # 180s 16mmin
+    # 750m 4km
+    for item in test_data:
+        res = osrm_client.route(school_location, item,"bicycle")
+        if res is not None:
+            print(f"Distance: {res['distance'] / 1000} km")
+            print(f"Duration: {res['duration'] / 60} min")
+        else:
+            print("No route found.")
+    return
     # return
 
     filter = filter_sorter.Filter()
