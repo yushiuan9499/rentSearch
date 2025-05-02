@@ -91,7 +91,7 @@ async def search(request: Request,
         rent_types=rent_types,
         house_types=house_types,
         materials=materials,
-        school_location=((longitude, latitude) if longitude == 1000 and latitude == 1000 else None))
+        school_location=((longitude, latitude) if longitude != 1000 and latitude != 1000 else None))
     sorter = filter_sorter.Sort(
         min_price=min_price_order,
         max_price=max_price_order,
