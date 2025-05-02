@@ -81,20 +81,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // 建立其餘資訊的顯示
       const info = document.createElement("div");
+      info.className="result-info";
       info.innerHTML = `
+      <div class="info-grid">
         <p><strong>房型：</strong>${houseTypeMap[item.house_type]}</p>
-        <p><strong>租賃類型：</strong>${rentTypeMap[item.rent_type]}</p>
-        <p><strong>材質：</strong>${materialMap[item.material]}</p>
-        <p><strong>剩餘空房數量：</strong>${item.rest_room_num}</p>
         <p><strong>租金範圍：</strong>${item.min_price} ~ ${item.max_price}</p>
         <p><strong>押金範圍：</strong>${item.min_deposit} ~ ${item.max_deposit}</p>
-        <p><strong>電表：</strong>${item.ammeter ? "有" : "無"}</p>
-        <p><strong>地址：</strong>${item.city}${item.town}${item.address}</p>
-        <p><strong>性別限制：</strong>${genderMap[item.gender]}</p>
         <p><strong>房間類型：</strong>${roomTypeMap[item.room_type]}</p>
+        <p><strong>租賃類型：</strong>${rentTypeMap[item.rent_type]}</p>
         <p><strong>坪數：</strong>${item.area}</p>
         <p><strong>距離：</strong>${item.distance} 公尺</p>
         <p><strong>預估行程時間：</strong>${item.travel_time} 秒</p>
+        <p><strong>剩餘空房數量：</strong>${item.rest_room_num}</p>
+        <p><strong>地址：</strong>${item.city}${item.town}${item.address}</p>
+        <p><strong>性別限制：</strong>${genderMap[item.gender]}</p>
+        <p><strong>電表：</strong>${item.ammeter ? "有" : "無"}</p>
+        <p><strong>材質：</strong>${materialMap[item.material]}</p>
+      </div>
       `;
       
       li.appendChild(info);
