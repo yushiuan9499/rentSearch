@@ -6,3 +6,4 @@ osrm-data/*
 osrm-data/profiles/lib/
 osrm.log
 .env
+cache/

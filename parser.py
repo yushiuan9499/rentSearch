@@ -87,16 +87,13 @@ def parse_item(item: dict) -> dict|tuple[dict, dict]:
     ret["city"] = item["house_city"]
     ret["town"] = item["house_town"]
     ret["address"] = item["house_address"]
-    try:
-        ret["coordinates"] = (float(item["longitude"]), float(item["latitude"]))
-    except:
-        # try to geocode the address
-        res = arcgis_client.geocode(ret["city"], ret["town"], ret["address"])
-        if res is None:
-            print(f"Error geocoding address: {item['house_id']}")
-            ret["coordinates"] = (0.0, 0.0)
-        else:
-            ret["coordinates"] = (res["lon"], res["lat"])
+    # try to geocode the address
+    res = arcgis_client.geocode(ret["city"], ret["town"], ret["address"])
+    if res is None:
+        print(f"Error geocoding address: {item['house_id']}")
+        ret["coordinates"] = (0.0, 0.0)
+    else:
+        ret["coordinates"] = (res["lon"], res["lat"])
     # get limit
     if item["sex_limit"] == "男":
         ret["gender"] = "M"
@@ -154,6 +151,7 @@ def parse_list(data: list[dict]) -> list[dict]:
         for x in (res if isinstance(res, tuple) else (res,))
         if isinstance(x, dict)
     ]
+    arcgis_client.dump_data()
     return parsed_data
 
 def convert(filename: str):
@@ -166,4 +164,3 @@ def convert(filename: str):
 
 if __name__ == "__main__":
     convert("NCKU.json")
-    arcgis_client.dump_data()

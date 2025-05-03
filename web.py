@@ -72,13 +72,13 @@ async def search(request: Request,
                  rent_types: Optional[list[str]] = Form([]),
                  house_types: Optional[list[str]] = Form([]),
                  materials: Optional[list[str]] = Form([]),
-                 longitude: Optional[float] = Form(0),
-                 latitude: Optional[float] = Form(0),
+                 longitude: Optional[float] = Form(1000),
+                 latitude: Optional[float] = Form(1000),
                  min_price_order: Optional[int] = Form(0),
                  max_price_order: Optional[int] = Form(0),
                  area_order: Optional[int] = Form(0),
-                 duration_order: Optional[int] = Form(1000),
-                 distance_order: Optional[int] = Form(1000)):
+                 duration_order: Optional[int] = Form(0),
+                 distance_order: Optional[int] = Form(0)):
     filter = filter_sorter.Filter(
         min_price=min_price,
         max_price=max_price,
@@ -92,6 +92,7 @@ async def search(request: Request,
         house_types=house_types,
         materials=materials,
         school_location=((longitude, latitude) if longitude != 1000 and latitude != 1000 else None))
+    print(filter.school_location)
     sorter = filter_sorter.Sort(
         min_price=min_price_order,
         max_price=max_price_order,

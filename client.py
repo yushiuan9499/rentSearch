@@ -2,6 +2,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import re
+import time
 
 def tuple_to_str(origin: str|tuple[float], destination: str|tuple[float], mode: str) -> str:
     if isinstance(origin, str):
@@ -175,11 +176,13 @@ class ArcGISClient:
     with open("cache/arcgis.json", "r") as arcgis_file:
         arcgis_data = json.load(arcgis_file)
     def preprocess_address(self, address: str) -> str:
+        # Remove all space \n \t _ and anything shouldn't exist
+        address = re.sub(r"[\s\n\t_]", "", address)
         # Remove characters after "號"
         address = re.sub(r"號.*", "號", address)
-        # Remove characters before "市" "縣" "鄉" "鎮" "區"
-        address = re.sub(r".*(市|縣|鄉|鎮|區)", r"\1", address)
-        # Remove numbers + "鄰"
+        # Remove characters before "市" "縣" "鄉" "鎮" "區" and that character
+        address = re.sub(r".*(市|縣|鄉|鎮|區|里)", "", address)
+        # Remove numbers + "鄰" 
         address = re.sub(r"\d+鄰", "", address)
         return address
 
@@ -191,44 +194,50 @@ class ArcGISClient:
         }
         self.params = {
             "f": "json",
-            "outSR": 4326,
+            "outSr": 4326,
             "maxLocations": 2,
-            "outFields": "Match_addr",
-            "CountryCode": "TW",
+            "countryCode": "TW",
         }
-    def geocode(self, region: str, neighborhood: str, address: str) -> dict|None:
+    def geocode(self, city: str, neighborhood: str|None, address: str) -> dict|None:
         '''
         :param region: Region name
         :param neighborhood: Neighborhood name
         :param address: Address to geocode
         :return: dict with lat and lon
         '''
+        if neighborhood is None:
+            # 不知道為什麼，資料就是會出現 None
+            neighborhood = ""
         # Preprocess address
         address = self.preprocess_address(address)
-        if tuple_to_str(region, neighborhood, address) in ArcGISClient.arcgis_data:
-            location = ArcGISClient.arcgis_data[tuple_to_str(region, neighborhood, address)]["candidates"][0]["location"]
+        if tuple_to_str(city, neighborhood, address) in ArcGISClient.arcgis_data:
+            location = ArcGISClient.arcgis_data[tuple_to_str(city, neighborhood, address)]["candidates"][0]["location"]
             return {
                 "lat": float(location["y"]),
                 "lon": float(location["x"])
             }
         # Geocode
         url = f"{self.base_url}/findAddressCandidates"
-        self.params["Region"] = region
-        self.params["Neighborhood"] = neighborhood
-        self.params["Address"] = address
+        self.params["city"] = city 
+        self.params["neighborhood"] = neighborhood
+        self.params["address"] = address
+        self.params["SingleLine"] = city + neighborhood + address
         try:
             response = requests.get(url, headers=self.headers, params=self.params)
+            time.sleep(0.7)  # Avoid hitting the rate limit
             response.raise_for_status()  # Raise an error for bad responses
             data = response.json()
-            ArcGISClient.arcgis_data[tuple_to_str(region, neighborhood, address)] = data
+            ArcGISClient.arcgis_data[tuple_to_str(city, neighborhood, address)] = data
             if "candidates" in data and len(data["candidates"]) > 0:
                 candidate = data["candidates"][0]
+                if candidate["extent"]["xmax"] - candidate["extent"]["xmin"] > 0.01 or candidate["extent"]["ymax"] - candidate["extent"]["ymin"] > 0.01:
+                    raise Exception(f"Geocoding error is too big: {city}{neighborhood}{address}, {candidate}")
                 return {
                     "lat": float(candidate["location"]["y"]),
                     "lon": float(candidate["location"]["x"])
                 }
             else:
-                raise Exception(f"Geocoding error: {data}")
+                raise Exception(f"Geocoding error: {city}{neighborhood}{address}, {data}")
         except requests.RequestException as e:
             print(f"Error fetching data: {e}")
             return None
