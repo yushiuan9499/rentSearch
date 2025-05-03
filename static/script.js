@@ -67,6 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
     results.forEach(item => {
 
       const a = document.createElement("a");
+      // Convert item.url to string
+      if(typeof item.url !== "string") {
+        item.url = String(item.url);
+      }
       // 如果item.url 開頭是 http:// 或 https://，則直接使用該網址
       // 否則，將網址前面加上 https://house.nfu.edu.tw/NCKU + item.url
       a.href = item.url.startsWith("http://") || item.url.startsWith("https://") ? item.url : "https://house.nfu.edu.tw/NCKU" + item.url;
