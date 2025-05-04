@@ -6,12 +6,12 @@
 - 利用列表篩選租屋類型，不用一個一個點選  
 - 能更自由的排序搜尋結果  
 > [!WARNING]  
-> 1. 本工具使用到許多第三方API，請不要濫用  
+> 1. 本工具使用到許多第三方API，請不要濫用。  
 > 2. 本工具是利用[Formosa 雲端租屋生活網](https://house.nfu.edu.tw/)的校外賃居網站資料進行爬蟲。  
 >    不保證資料的正確性與完整性，僅供參考。  
 > 3. 本工具計算通勤時間與距離的方式是利用OSRM。  
 >    參數是人工設定的，並不保證正確性。  
-## 使用方法
+## 安裝
 ==施工中==  
 1. 安裝python  
 2. 安裝python套件  
@@ -33,4 +33,15 @@
   wget https://download.geofabrik.de/asia/taiwan-latest.osm.pbf -O osrm-data/taiwan-latest.osm.pbf
   # 下載profile (有版本問題，正在修正)
   ```
-5. 
+5. 切割出你要的地圖區域
+## 使用
+==施工中==
+1. 啟動osrm server
+2. 啟動網頁server
+  ```bash
+  python3 ./web.py
+  ```
+3. 使用瀏覽器打開網頁
+  ```bash
+  http://localhost:8000
+  ```
