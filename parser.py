@@ -2,7 +2,81 @@
 import json
 import client
 
+equipment_map = {
+    # 電器類
+    "電冰箱": "refrigerator",
+    "電視機": "tv",
+    "烘乾機": "dryer",
+    "洗衣機": "washing_machine",
+    "冷氣機": "air_conditioner",
+    "脫水機": "dehydrator",
+    "飲水機": "water_dispenser",
+    "中央空調": "central_air_conditioner",
+    # 家具類
+    "沙發": "sofa",
+    "衣櫃": "closet",
+    "書桌(椅)": "desk",
+    "書櫃": "bookshelf",
+    "單人床": "single_bed",
+    "雙人床": "double_bed",
+    "檯燈": "desk_lamp",
+    "獨立陽台": "balcony",
+    # 通訊相關
+    "寬頻網路": "broadband",
+    "第四台": "cable_tv",
+    "數位電視": "digital_tv",
+    "電話": "telephone",
+    "光纖網路": "fiber_optic",
+    # 加熱相關
+    "天然瓦斯": "natural_gas",
+    "桶裝瓦斯": "gas_tank",
+    "瓦斯熱水器": "gas_water_heater",
+    "電熱水器": "electric_water_heater",
+    "太陽能熱水器": "solar_water_heater",
+    # 公共設施
+    "公共陽台": "public_balcony",
+    "停車場": "parking_lot",
+    "電梯": "elevator",
+    "中庭": "atrium",
+    "晒衣場": "laundry_area",
+    "曬衣場": "laundry_area",
+    "管理中心": "management_center",
+}
 arcgis_client = client.ArcGISClient()
+def parse_room_data(room_data: str) -> dict:
+    """
+    Parses the given room data and returns a dictionary with the parsed data.
+
+    Args:
+        room_data (str): The room data to be parsed.
+
+    Returns:
+        dict: A dictionary with the parsed data.
+    """
+    ret = {}
+    data = room_data.split()
+    if data[0] == "[套房":
+        ret["room_type"] = "suite"
+    elif data[0] == "[雅房":
+        ret["room_type"] = "room"
+    else:
+        raise ValueError(f"Unknown room type: {data[0]}")
+    try:
+        ret["area"] = int(data[1][1:])
+    except ValueError:
+        print(f"Error parsing area: {data[1][1:]}")
+        ret["area"] = 0
+    try:
+        ret["room_num"] = int(data[3])
+    except ValueError:
+        print(f"Error parsing room number: {data[3]}")
+        ret["room_num"] = 0
+    try:
+        ret["rest_room_num"] = int(data[6])
+    except ValueError:
+        print(f"Error parsing rest room number: {data[6]}")
+        ret["rest_room_num"] = 0
+    return ret
 def parse_item(item: dict) -> dict|tuple[dict, dict]:
     """
     Parses the given data and returns a dictionary with the parsed data.
@@ -51,8 +125,7 @@ def parse_item(item: dict) -> dict|tuple[dict, dict]:
     if item["material"] == "水泥":
         ret["material"] = "cement"
     else:
-                         raise ValueError(f"Unknown material: {item['material']}")
-    ret["rest_room_num"] = item["rest_room_num"]
+        raise ValueError(f"Unknown material: {item['material']}")
     # get price
     ret["min_price"] = int(item["rentalx"])
     ret["max_price"] = int(item["rentaly"])
@@ -101,38 +174,22 @@ def parse_item(item: dict) -> dict|tuple[dict, dict]:
         ret["gender"] = "F"
     else:
         ret["gender"] = "N/A"
-    # get area
-    tmp = item["house_area"].split()
-    room_area = -1
-    suite_area = -1
-    for i in tmp:
-        if i[0:2] == "套房":
-            try:
-                suite_area = int(i[2:-1])
-            except :
-                print(f"Error parsing suite area: {i} {i[2:-1]}")
-        elif i[0:2] == "雅房":
-            try:
-                room_area = int(i[2:-1])
-            except :
-                print(f"Error parsing suite area: {i} {i[2:-1]}")
-        else:
-            raise ValueError(f"Unknown area type: {i}")
-    if room_area == -1:
-        ret["room_type"] = "suite"
-        ret["area"] = suite_area
+    ret["equipment"] = [
+        equipment_map[equipment]
+        for equipment in item["equipment"]
+        if equipment in equipment_map or len(equipment) < 6 # 有些奇怪的東西，通常長過 6個字
+    ]
+    # get area and room type
+    if len(item["room_data"]) == 2:
+        ret1 = ret
+        ret2 = ret.copy()
+        ret1.update(parse_room_data(item["room_data"][0]))
+        ret2.update(parse_room_data(item["room_data"][1]))
+        return ret1, ret2
+    if len(item["room_data"]) == 1:
+        ret.update(parse_room_data(item["room_data"][0]))
         return ret
-    if suite_area == -1:
-        ret["room_type"] = "room"
-        ret["area"] = room_area
-        return ret
-    ret1 = ret
-    ret2 = ret.copy()
-    ret1["room_type"] = "room"
-    ret1["area"] = room_area
-    ret2["room_type"] = "suite"
-    ret2["area"] = suite_area
-    return ret1, ret2
+    raise ValueError(f"Unknown room data: {item['room_data']}")
 
 def parse_list(data: list[dict]) -> list[dict]:
     """
