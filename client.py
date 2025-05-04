@@ -46,10 +46,12 @@ class NfuClient:
         ret["room_data"] = [
             ' '.join(text.split())
             for text in content.xpath("/html/body/main/div[2]/div/div[1]/div[4]/div[1]/div[2]/div/div/text()")
+            if text.strip() != ''
         ]
         ret["identity_limit"] = [
             ' '.join(text.split())
             for text in content.xpath("/html/body/main/div[2]/div/div[1]/div[4]/div[7]/div[4]/text()")
+            if text.strip() != ''
         ]
         ret["equipment"] = content.xpath('//div[@class="clearfix"]/span[@class="rh-criteria-more"]/text()')
         return ret
