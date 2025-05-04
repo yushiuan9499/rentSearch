@@ -17,8 +17,17 @@
 
       <!-- 條件區 -->
       <h2>搜尋條件</h2>
-      <label>最低價格: <input type="number" name="min_price"></label><br>
-      <label>最高價格: <input type="number" name="max_price"></label><br>
+      <div class="slider-label">價格範圍：</div>
+      <div class="slider-container">
+        <div class="slider"></div>
+        <div id="minPriceThumb" class="thumb" style="left: 0%;"></div>
+        <div id="maxPriceThumb" class="thumb" style="left: 100%;"></div>
+      </div>
+      <div class="range-values">
+        <span id="priceDisplay">0 - 10000 元</span>
+      </div>
+      <input type="hidden" id="minPrice" name="min_price" value="0">
+      <input type="hidden" id="maxPrice" name="max_price" value="10000">
       <label>性別：</label>
       <select name="gender">
         <option value="N/A">不限</option>

@@ -1,3 +1,55 @@
+const sliderContainer = document.querySelector('.slider-container');
+const minPriceThumb = document.getElementById('minPriceThumb');
+const maxPriceThumb = document.getElementById('maxPriceThumb');
+const priceDispaly = document.getElementById('priceDisplay');
+const minPriceInput = document.getElementById('minPrice');
+const maxPriceInput = document.getElementById('maxPrice');
+let minPrice = 0;
+let maxPrice = 15000;
+function round(value,step) {
+  return Math.round(value/step)*step;
+}
+function updatePriceDisplay() {
+  priceDisplay.textContent = `${minPrice} - ${maxPrice} 元`;
+  minPriceInput.value = Math.round(minPrice);
+  maxPriceInput.value = Math.round(maxPrice);
+}
+
+function moveThumb(event, thumb, isMin) {
+  const MIN_PRICE = 0;
+  const MAX_PRICE = 15000;
+  const PRICE_STEP = 100;
+  const rect = sliderContainer.getBoundingClientRect();
+  const offsetX = event.clientX - rect.left;
+  const percentage = Math.min(Math.max(offsetX / rect.width * 100, 0), 100);
+
+  if (isMin) {
+    minPrice = round(Math.min(Math.max(0, percentage*MAX_PRICE/100), maxPrice - 1), PRICE_STEP);
+    thumb.style.left = `${minPrice*100/MAX_PRICE}%`;
+  } else {
+    maxPrice = round(Math.max(Math.min(MAX_PRICE, percentage*MAX_PRICE/100), minPrice + 1), PRICE_STEP);
+    thumb.style.left = `${maxPrice*100/MAX_PRICE}%`;
+  }
+
+  updatePriceDisplay();
+}
+
+minPriceThumb.addEventListener('mousedown', () => {
+  const onMouseMove = (event) => moveThumb(event, minPriceThumb, true);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', () => {
+    document.removeEventListener('mousemove', onMouseMove);
+  }, { once: true });
+});
+
+maxPriceThumb.addEventListener('mousedown', () => {
+  const onMouseMove = (event) => moveThumb(event, maxPriceThumb, false);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', () => {
+    document.removeEventListener('mousemove', onMouseMove);
+  }, { once: true });
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const schoolFrom = document.getElementById("school-form");
   const searchForm = document.getElementById("search-form");
