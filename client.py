@@ -3,8 +3,9 @@ import json
 from bs4 import BeautifulSoup
 import re
 import time
+from lxml import html
 
-def tuple_to_str(origin: str|tuple[float], destination: str|tuple[float], mode: str) -> str:
+def tuple_to_str(origin: str|tuple[float,float], destination: str|tuple[float,float], mode: str) -> str:
     if isinstance(origin, str):
         origin = origin.replace(" ", "")
     if isinstance(destination, str):
@@ -26,6 +27,33 @@ class NfuClient:
             "Content-Type": "application/json;charset=utf-8"
         }
 
+    def get_precise_data(self,house_id: int) -> dict:
+        '''
+            Get precise data from NFU
+        '''
+        if self.headers["X-CSRF-TOKEN"] is None:
+            self.get_csrf_token()
+        # get html from house id
+        url = f"https://house.nfu.edu.tw/NCKU/{house_id}"
+        res = self.session.get(url, headers=self.headers)
+        if res.status_code != 200:
+            raise Exception(f"Failed to get precise data, status code: {res.status_code}")
+        # Parse the HTML content
+        content = html.fromstring(res.content)
+        # Extract the data using XPath
+        ret = {}
+        ret["no_smoking"] = (content.xpath("/html/body/main/div[2]/div/div[1]/div[4]/div[6]/div[4]/text()")[0] == "是")
+        ret["room_data"] = [
+            ' '.join(text.split())
+            for text in content.xpath("/html/body/main/div[2]/div/div[1]/div[4]/div[1]/div[2]/div/div/text()")
+        ]
+        ret["identity_limit"] = [
+            ' '.join(text.split())
+            for text in content.xpath("/html/body/main/div[2]/div/div[1]/div[4]/div[7]/div[4]/text()")
+        ]
+        ret["equipment"] = content.xpath('//div[@class="clearfix"]/span[@class="rh-criteria-more"]/text()')
+        return ret
+
     def get_sch_ids(self,sch_abbr: str) -> list[int]:
         if sch_abbr not in NfuClient.sch_ids:
             res = self.session.get(f"https://house.nfu.edu.tw/{sch_abbr}")
@@ -45,7 +73,7 @@ class NfuClient:
         soup = BeautifulSoup(res.text, "html.parser")
         self.headers["X-CSRF-TOKEN"] = soup.find("meta", attrs={"name": "csrf-token"})["content"]
         return 
-    def get_house_data_by_id(self,sch_ids: list[int]) -> list[dict]:
+    def get_house_data_by_id(self,sch_ids: list[int]) -> list[dict]|None:
         '''
             Get house data from NFU
         '''
@@ -57,6 +85,9 @@ class NfuClient:
             response = self.session.post(url, headers=self.headers, json=data)
             response.raise_for_status()  # Raise an error for bad responses
             data = response.json()
+            for house in data:
+                precise_data = self.get_precise_data(house["house_id"])
+                house.update(precise_data)
             return data
         except requests.RequestException as e:
             print(f"Error fetching data: {e}")
@@ -65,7 +96,7 @@ class NfuClient:
             print(f"Error decoding JSON: {e}")
             return None
 
-    def get_house_data_by_abbr(self, sch_abbr: str) -> list[dict]:
+    def get_house_data_by_abbr(self, sch_abbr: str) -> list[dict]|None:
         sch_ids = self.get_sch_ids(sch_abbr)
         return self.get_house_data_by_id(sch_ids)
     def dump_sch_ids(self):
@@ -83,7 +114,7 @@ class GoogleClient:
         self.api_key = api_key
         return
 
-    def fetch_data(self, origin: str|tuple[float], destination: str|tuple[float], mode: str = "BICYCLE") -> dict:
+    def fetch_data(self, origin: str|tuple[float,float], destination: str|tuple[float,float], mode: str = "BICYCLE") -> dict|None:
         if tuple_to_str( origin, destination, mode ) in GoogleClient.google_map:
             return GoogleClient.google_map[{"origin": origin, "destination": destination}]
         url = "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix"
@@ -133,7 +164,7 @@ class OSRMClient:
     def __init__(self, host="localhost", port=5000):
         self.base_url = f"http://{host}:{port}/route/v1"
 
-    def route(self, origin: tuple[float], destination: tuple[float] ,mode: str) -> dict:
+    def route(self, origin: tuple[float,float], destination: tuple[float,float] ,mode: str) -> dict:
         """
         :param mode: 'car', 'bicycle', or 'motorcycle'
         :param start: (lon, lat)
@@ -222,6 +253,7 @@ class ArcGISClient:
         self.params["neighborhood"] = neighborhood
         self.params["address"] = address
         self.params["SingleLine"] = city + neighborhood + address
+        print(f"Geocoding {city} {neighborhood} {address}")
         try:
             response = requests.get(url, headers=self.headers, params=self.params)
             time.sleep(0.7)  # Avoid hitting the rate limit
