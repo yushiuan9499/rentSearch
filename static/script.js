@@ -2,9 +2,12 @@ let minPrice = 0;
 let maxPrice = 15000;
 let minArea = 0;
 let maxArea = 100;
-let distance = 500;
-let duration = 30;
-function moveThumb(event, thumb, isMin, maxValue, step, displayElement, inputElement, unit) {
+let distance = 5000;
+let duration = 600;
+function round(value, step) {
+  return Math.round(value / step) * step;
+}
+function moveThumb(event, thumb, sliderContainer, isMin, maxValue, step, displayElement, inputElement, unit) {
   const rect = sliderContainer.getBoundingClientRect();
   const offsetX = event.clientX - rect.left;
   const percentage = Math.min(Math.max(offsetX / rect.width * 100, 0), 100);
@@ -22,7 +25,7 @@ function moveThumb(event, thumb, isMin, maxValue, step, displayElement, inputEle
   inputElement.value = Math.round(isMin ? minPrice : maxPrice);
 }
 
-function moveSingleThumb(event, thumb, maxValue, step, displayElement, inputElement, unit) {
+function moveSingleThumb(event, thumb, sliderContainer, maxValue, step, displayElement, inputElement, unit) {
   const rect = sliderContainer.getBoundingClientRect();
   const offsetX = event.clientX - rect.left;
   const percentage = Math.min(Math.max(offsetX / rect.width * 100, 0), 100);
@@ -33,7 +36,10 @@ function moveSingleThumb(event, thumb, maxValue, step, displayElement, inputElem
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const sliderContainer = document.querySelector('.slider-container');
+  const priceSliderContainer = document.querySelector('.slider-container.price');
+  const areaSliderContainer = document.querySelector('.slider-container.area');
+  const distanceSliderContainer = document.querySelector('.slider-container.distance');
+  const durationSliderContainer = document.querySelector('.slider-container.duration');
   const minPriceThumb = document.getElementById('minPriceThumb');
   const maxPriceThumb = document.getElementById('maxPriceThumb');
   const priceDispaly = document.getElementById('priceDisplay');
@@ -55,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const durationInput = document.getElementById('duration');
 
   minPriceThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveThumb(event, minPriceThumb, true , 50000, 100, priceDispaly, minPriceInput, '元');
+    const onMouseMove = (event) => moveThumb(event, minPriceThumb,priceSliderContainer, true , 50000, 100, priceDispaly, minPriceInput, '元');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -63,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   maxPriceThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveThumb(event, maxPriceThumb, false, 50000, 100, priceDispaly, maxPriceInput, '元');
+    const onMouseMove = (event) => moveThumb(event, maxPriceThumb, priceSliderContainer, false, 50000, 100, priceDispaly, maxPriceInput, '元');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -71,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   minAreaThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveThumb(event, minAreaThumb, true, 100, 1, areaDisplay, minAreaInput, '坪');
+    const onMouseMove = (event) => moveThumb(event, minAreaThumb, areaSliderContainer,true, 100, 1, areaDisplay, minAreaInput, '坪');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -79,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   maxAreaThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveThumb(event, maxAreaThumb, false, 100, 1, areaDisplay, maxAreaInput, '坪');
+    const onMouseMove = (event) => moveThumb(event, maxAreaThumb, areaSliderContainer,false , 100, 1, areaDisplay, maxAreaInput, '坪');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -87,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   distanceThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveSingleThumb(event, distanceThumb, 50000, 10, distanceDisplay, distanceInput, '公尺');
+    const onMouseMove = (event) => moveSingleThumb(event, distanceThumb, distanceSliderContainer, 20000, 10, distanceDisplay, distanceInput, '公尺');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);
@@ -95,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   durationThumb.addEventListener('mousedown', () => {
-    const onMouseMove = (event) => moveSingleThumb(event, durationThumb, 6000, 10, durationDisplay, durationInput, '秒');
+    const onMouseMove = (event) => moveSingleThumb(event, durationThumb, durationSliderContainer, 6000, 1, durationDisplay, durationInput, '秒');
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', () => {
       document.removeEventListener('mousemove', onMouseMove);

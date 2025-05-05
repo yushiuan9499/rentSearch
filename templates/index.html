@@ -18,7 +18,7 @@
       <!-- 條件區 -->
       <h2>搜尋條件</h2>
       <div class="slider-label">價格範圍：</div>
-      <div class="slider-container">
+      <div class="slider-container price">
         <div class="slider"></div>
         <div id="minPriceThumb" class="thumb" style="left: 0%;"></div>
         <div id="maxPriceThumb" class="thumb" style="left: 100%;"></div>
@@ -29,7 +29,7 @@
       <input type="hidden" id="minPrice" name="min_price" value="0">
       <input type="hidden" id="maxPrice" name="max_price" value="10000">
       <div class="slider-label">坪數範圍(坪)：</div>
-      <div class="slider-container">
+      <div class="slider-container area">
         <div class="slider"></div>
         <div id="minAreaThumb" class="thumb" style="left: 0%;"></div>
         <div id="maxAreaThumb" class="thumb" style="left: 100%;"></div>
@@ -50,24 +50,24 @@
       <label>經度: <input type="number" name="longitude" step="0.0000001"></label>
       <label>緯度: <input type="number" name="latitude" step="0.0000001"></label><br>
       <div class="slider-label">距離學校最多(公尺)：</div>
-      <div class="slider-container">
+      <div class="slider-container distance">
         <div class="slider"></div>
-        <div id="distanceThumb" class="thumb" style="left: 50%;"></div>
+        <div id="distanceThumb" class="thumb" style="left: 25%;"></div>
       </div>
       <div class="range-values">
-        <span id="distanceDisplay">500 公尺</span>
+        <span id="distanceDisplay">5000 公尺</span>
       </div>
-      <input type="hidden" id="distance" name="distance" value="500">
+      <input type="hidden" id="distance" name="distance" value="5000">
 
       <div class="slider-label">通勤時間最多(秒)：</div>
-      <div class="slider-container">
+      <div class="slider-container duration">
         <div class="slider"></div>
-        <div id="durationThumb" class="thumb" style="left: 50%;"></div>
+        <div id="durationThumb" class="thumb" style="left: 10%;"></div>
       </div>
       <div class="range-values">
-        <span id="durationDisplay">30 秒</span>
+        <span id="durationDisplay">600 秒</span>
       </div>
-      <input type="hidden" id="duration" name="duration" value="30">
+      <input type="hidden" id="duration" name="duration" value="600">
       <label>建築材料（全留空，表不限）：</label>
       <label><input type="checkbox" name="material" value="cement">水泥</label>
 
