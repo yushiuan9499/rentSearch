@@ -50,3 +50,9 @@
 .slider-label {
   margin-bottom: 5px;
 }
+.range-values {
+  margin-top: 5px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+}

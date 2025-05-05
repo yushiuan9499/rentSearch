@@ -1,54 +1,108 @@
-const sliderContainer = document.querySelector('.slider-container');
-const minPriceThumb = document.getElementById('minPriceThumb');
-const maxPriceThumb = document.getElementById('maxPriceThumb');
-const priceDispaly = document.getElementById('priceDisplay');
-const minPriceInput = document.getElementById('minPrice');
-const maxPriceInput = document.getElementById('maxPrice');
 let minPrice = 0;
 let maxPrice = 15000;
-function round(value,step) {
-  return Math.round(value/step)*step;
-}
-function updatePriceDisplay() {
-  priceDisplay.textContent = `${minPrice} - ${maxPrice} 元`;
-  minPriceInput.value = Math.round(minPrice);
-  maxPriceInput.value = Math.round(maxPrice);
-}
-
-function moveThumb(event, thumb, isMin) {
-  const MIN_PRICE = 0;
-  const MAX_PRICE = 15000;
-  const PRICE_STEP = 100;
+let minArea = 0;
+let maxArea = 100;
+let distance = 500;
+let duration = 30;
+function moveThumb(event, thumb, isMin, maxValue, step, displayElement, inputElement, unit) {
   const rect = sliderContainer.getBoundingClientRect();
   const offsetX = event.clientX - rect.left;
   const percentage = Math.min(Math.max(offsetX / rect.width * 100, 0), 100);
+  const value = round(percentage * maxValue / 100, step);
 
   if (isMin) {
-    minPrice = round(Math.min(Math.max(0, percentage*MAX_PRICE/100), maxPrice - 1), PRICE_STEP);
-    thumb.style.left = `${minPrice*100/MAX_PRICE}%`;
+    minPrice = round(Math.min(Math.max(0, value), maxPrice - step), step);
+    thumb.style.left = `${minPrice * 100 / maxValue}%`;
   } else {
-    maxPrice = round(Math.max(Math.min(MAX_PRICE, percentage*MAX_PRICE/100), minPrice + 1), PRICE_STEP);
-    thumb.style.left = `${maxPrice*100/MAX_PRICE}%`;
+    maxPrice = round(Math.max(Math.min(maxValue, value), minPrice + step), step);
+    thumb.style.left = `${maxPrice * 100 / maxValue}%`;
   }
 
-  updatePriceDisplay();
+  displayElement.textContent = `${minPrice} - ${maxPrice} ${unit}`;
+  inputElement.value = Math.round(isMin ? minPrice : maxPrice);
 }
 
-minPriceThumb.addEventListener('mousedown', () => {
-  const onMouseMove = (event) => moveThumb(event, minPriceThumb, true);
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', () => {
-    document.removeEventListener('mousemove', onMouseMove);
-  }, { once: true });
+function moveSingleThumb(event, thumb, maxValue, step, displayElement, inputElement, unit) {
+  const rect = sliderContainer.getBoundingClientRect();
+  const offsetX = event.clientX - rect.left;
+  const percentage = Math.min(Math.max(offsetX / rect.width * 100, 0), 100);
+  const value = round(percentage * maxValue / 100, step);
+  thumb.style.left = `${value * 100 / maxValue}%`;
+  displayElement.textContent = `${value} ${unit}`;
+  inputElement.value = Math.round(value);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const sliderContainer = document.querySelector('.slider-container');
+  const minPriceThumb = document.getElementById('minPriceThumb');
+  const maxPriceThumb = document.getElementById('maxPriceThumb');
+  const priceDispaly = document.getElementById('priceDisplay');
+  const minPriceInput = document.getElementById('minPrice');
+  const maxPriceInput = document.getElementById('maxPrice');
+
+  const minAreaThumb = document.getElementById('minAreaThumb');
+  const maxAreaThumb = document.getElementById('maxAreaThumb');
+  const areaDisplay = document.getElementById('areaDisplay');
+  const minAreaInput = document.getElementById('minArea');
+  const maxAreaInput = document.getElementById('maxArea');
+
+  const distanceThumb = document.getElementById('distanceThumb');
+  const distanceDisplay = document.getElementById('distanceDisplay');
+  const distanceInput = document.getElementById('distance');
+
+  const durationThumb = document.getElementById('durationThumb');
+  const durationDisplay = document.getElementById('durationDisplay');
+  const durationInput = document.getElementById('duration');
+
+  minPriceThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveThumb(event, minPriceThumb, true , 50000, 100, priceDispaly, minPriceInput, '元');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  maxPriceThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveThumb(event, maxPriceThumb, false, 50000, 100, priceDispaly, maxPriceInput, '元');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  minAreaThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveThumb(event, minAreaThumb, true, 100, 1, areaDisplay, minAreaInput, '坪');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  maxAreaThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveThumb(event, maxAreaThumb, false, 100, 1, areaDisplay, maxAreaInput, '坪');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  distanceThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveSingleThumb(event, distanceThumb, 50000, 10, distanceDisplay, distanceInput, '公尺');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  durationThumb.addEventListener('mousedown', () => {
+    const onMouseMove = (event) => moveSingleThumb(event, durationThumb, 6000, 10, durationDisplay, durationInput, '秒');
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
 });
 
-maxPriceThumb.addEventListener('mousedown', () => {
-  const onMouseMove = (event) => moveThumb(event, maxPriceThumb, false);
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', () => {
-    document.removeEventListener('mousemove', onMouseMove);
-  }, { once: true });
-});
 
 document.addEventListener("DOMContentLoaded", function () {
   const schoolFrom = document.getElementById("school-form");
