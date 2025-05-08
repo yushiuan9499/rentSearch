@@ -31,8 +31,10 @@
   ```bash
   # 下載台灣的地圖
   wget https://download.geofabrik.de/asia/taiwan-latest.osm.pbf -O osrm-data/taiwan-latest.osm.pbf
-  # 下載profile (有版本問題，正在修正)
+  # 取得docker image版本
+  sudo docker run --rm osrm/osrm-backend:latest osrm-extract --version
   ```
+  去github安裝對應的版本，連結:[https://github.com/Project-OSRM/osrm-backend/releases/tag/<YOUR_VERSION>]
 5. 切割出你要的地圖區域
 ## 使用
 ==施工中==
